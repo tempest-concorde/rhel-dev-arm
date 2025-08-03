@@ -19,11 +19,6 @@ jobs:
     - name: Install dependencies
       run: npm install @commitlint/cli @commitlint/config-conventional
 
-    - name: WTF
-      run: | 
-        pwd
-        ls -alh
-
     - name: Validate PR title
       run: |
         PR_TITLE=$(jq -r '.pull_request.title' "$GITHUB_EVENT_PATH")
