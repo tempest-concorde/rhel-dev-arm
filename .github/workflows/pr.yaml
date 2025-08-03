@@ -12,7 +12,7 @@ jobs:
   buildlatest:
     name: Build Bootc image with repo access
 
-    runs-on: uubuntu-24.04-arm
+    runs-on: ubuntu-24.04-arm
     container:
       image: registry.access.redhat.com/ubi9/ubi
       options: --privileged    
