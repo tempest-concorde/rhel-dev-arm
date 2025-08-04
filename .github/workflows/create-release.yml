@@ -82,9 +82,9 @@ jobs:
       with:
         submodules: true
         fetch-depth: 0
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.FG_PAT }}
     - name: Python Semantic Release
       id: release
       uses: python-semantic-release/python-semantic-release@v9.8.8
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.FG_PAT }}
