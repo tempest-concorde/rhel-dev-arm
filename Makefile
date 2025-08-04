@@ -15,3 +15,29 @@ get_node:
 
 
 get-deps: get_node get_vma
+
+
+dev:
+	go install github.com/hairyhenderson/gomplate/v3/cmd/gomplate@latest
+
+toml:
+	gomplate -f config.toml.tmpl -o config.toml
+iso: toml
+	sudo rm -rf output
+	mkdir output
+	sudo podman pull quay.io/rh-ee-chbutler/rhel-dev-arm:latest
+	sudo podman pull registry.redhat.io/rhel10/bootc-image-builder:latest
+
+	sudo podman run \
+    --rm \
+    -it \
+    --privileged \
+    --pull=newer \
+    --security-opt label=type:unconfined_t \
+    -v /var/lib/containers/storage:/var/lib/containers/storage \
+    -v $(pwd)/config.toml:/config.toml \
+    -v $(pwd)/output:/output \
+    registry.redhat.io/rhel10/bootc-image-builder:latest \
+    --type iso \
+    quay.io/rh-ee-chbutler/rhel-dev-arm:latest
+
