@@ -205,3 +205,8 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Do not commit for security reasons
+config.toml
+.envrc
+docker-auth.json
