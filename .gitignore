@@ -210,3 +210,4 @@ __marimo__/
 config.toml
 .envrc
 docker-auth.json
+direnv
