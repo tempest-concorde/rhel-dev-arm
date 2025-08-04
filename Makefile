@@ -31,7 +31,7 @@ iso: toml get-deps
 	mkdir output
 	podman pull quay.io/rh-ee-chbutler/rhel-dev-arm:latest
 	podman pull registry.redhat.io/rhel10/bootc-image-builder:latest
-	podman run --rm -it --privileged --pull=newer --security-opt label=type:unconfined_t -v /var/lib/containers/storage:/var/lib/containers/storage -v $(pwd)/config.toml:/config.toml -v $(pwd)/output:/output registry.redhat.io/rhel10/bootc-image-builder:latest --type iso quay.io/rh-ee-chbutler/rhel-dev-arm:latest
+	podman run --rm -it --privileged --pull=newer --security-opt label=type:unconfined_t -v /var/lib/containers/storage:/var/lib/containers/storage -v $(CURDIR)/config.toml:/config.toml -v $(CURDIR)/output:/output registry.redhat.io/rhel10/bootc-image-builder:latest --type iso quay.io/rh-ee-chbutler/rhel-dev-arm:latest
 
 
 qcow: toml get-deps
@@ -46,8 +46,8 @@ qcow: toml get-deps
 			--privileged \
 			--pull=newer \
 			--security-opt label=type:unconfined_t \
-			-v $(pwd)/config.toml:/config.toml:ro \
-			-v $(pwd)/output:/output \
+			-v $(CURDIR)/config.toml:/config.toml:ro \
+			-v $(CURDIR)/output:/output \
 			-v /var/lib/containers/storage:/var/lib/containers/storage \
 			registry.redhat.io/rhel10/bootc-image-builder:latest \
 			--local \
