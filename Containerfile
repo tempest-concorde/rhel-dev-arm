@@ -13,6 +13,7 @@ RUN dnf install -y \
     go && \
     dnf clean all
 
-RUN curl -sfL https://direnv.net/install.sh | bash
+COPY direnv /usr/bin/local/direnv
+RUN chmod +x /usr/bin/local/direnv
 
 RUN bootc container lint

@@ -13,8 +13,10 @@ get_node:
 	# mv node_exporter-1.9.1.linux-amd64/node_exporter node_exporter
 	# rm -r node-exporter.tar.gz node_exporter-1.9.1.linux-amd64
 
+get-direnv:
+	wget https://github.com/direnv/direnv/releases/download/v2.37.1/direnv.linux-amd64 -O direnv
 
-get-deps: get_node get_vma
+get-deps: get_node get_vma get-direnv
 
 
 dev:
@@ -22,7 +24,8 @@ dev:
 
 toml:
 	gomplate -f config.toml.tmpl -o config.toml
-iso: toml
+
+iso: toml get-deps
 	sudo rm -rf output
 	mkdir output
 	sudo podman pull quay.io/rh-ee-chbutler/rhel-dev-arm:latest
