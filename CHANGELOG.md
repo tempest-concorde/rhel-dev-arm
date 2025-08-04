@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.2.0 (2025-08-04)
+
+### Feature
+
+* feat: fix token workflow (#4)
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`cfda23f`](https://github.com/tempest-concorde/rhel-dev-arm/commit/cfda23f09b9f3b01c9762a8cb7b2803bc966df84))
+
 ## v0.1.0 (2025-08-04)
 
 ### Feature
