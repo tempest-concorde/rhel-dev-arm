@@ -26,7 +26,6 @@ toml:
 	gomplate -f config.toml.tmpl -o config.toml
 
 iso: toml get-deps
-	[ "$EUID" -eq 0 ] || { echo "Error: This script must be run as root" >&2; exit 1; }
 	rm -rf output
 	mkdir output
 	podman pull quay.io/rh-ee-chbutler/rhel-dev-arm:latest
@@ -35,7 +34,6 @@ iso: toml get-deps
 
 
 qcow: toml get-deps
-	[ "$EUID" -eq 0 ] || { echo "Error: This script must be run as root" >&2; exit 1; }
 	rm -rf output
 	mkdir output
 	podman pull quay.io/rh-ee-chbutler/rhel-dev-arm:latest
