@@ -10,7 +10,7 @@ RUN dnf install -y \
     vim \
     make \
     vim-enhanced \
-    go \
+    go && \
     dnf clean all
 
 RUN curl -sfL https://direnv.net/install.sh | bash
