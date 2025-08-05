@@ -20,7 +20,7 @@ EOF
 %end
 
 rootpw --lock
-group --name="{{ env.Getenv "USERNAME" }}" --gid=1000
+group --name {{ env.Getenv "USERNAME" }} --gid=1000
 user --name {{ env.Getenv "USERNAME" }}  --uid=1000 --gid=1000 --homedir=/var/home/{{ env.Getenv "USERNAME" }} --shell=/bin/bash --groups=wheel,users --password {{ env.Getenv "PASSWORD_HASH" }} --plaintext
 sshkey --username "{{ env.Getenv "USERNAME" }}" {{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}
 
