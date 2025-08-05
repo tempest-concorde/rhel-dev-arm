@@ -1,5 +1,43 @@
 # CHANGELOG
 
+## v0.2.1 (2025-08-05)
+
+### Chore
+
+* chore: update toml
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`2dc8507`](https://github.com/tempest-concorde/rhel-dev-arm/commit/2dc8507d4f12f9de5a9e4f9bb8e521b68702f432))
+
+* chore: update config toml
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`4155241`](https://github.com/tempest-concorde/rhel-dev-arm/commit/4155241f673150e90430daf2ddbecabdcd20a3f8))
+
+* chore: update config toml
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`4476f81`](https://github.com/tempest-concorde/rhel-dev-arm/commit/4476f8185e1bd81749f7823c21dd002d220d45da))
+
+* chore: wrapping toml
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`0056689`](https://github.com/tempest-concorde/rhel-dev-arm/commit/0056689fd1e880c296d7eda9da3914f2857442b6))
+
+* chore: remove root check
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`431ca78`](https://github.com/tempest-concorde/rhel-dev-arm/commit/431ca7862ebdeea161cdc7c52ff686abfe9af64d))
+
+* chore: correct make syntax
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`4aad606`](https://github.com/tempest-concorde/rhel-dev-arm/commit/4aad606523f8411621e9728d437142e6fbc71ea1))
+
+* chore: add qcow make file
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`58fccac`](https://github.com/tempest-concorde/rhel-dev-arm/commit/58fccacc39f0c97c9c46c0724132599042a18f5e))
+
+### Fix
+
+* fix: simplify
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`a829b0e`](https://github.com/tempest-concorde/rhel-dev-arm/commit/a829b0eb646b411735b49f1ca252c205f9d4c950))
+
 ## v0.2.0 (2025-08-04)
 
 ### Feature
