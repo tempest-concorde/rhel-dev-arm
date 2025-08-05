@@ -7,31 +7,17 @@ timezone UTC
 network --bootproto=dhcp --device=link --activate --onboot=on --hostname=bootc
 zerombr
 
-# For the command below it is critical to specify the disk otherwise it will erase ALL disks attached to the system
-clearpart --all --initlabel --disklabel=gpt
 autopart --type=plain
 
 # https://docs.fedoraproject.org/en-US/fedora/f36/install-guide/appendixes/Kickstart_Syntax_Reference/#sect-kickstart-commands-users-groups
 # Generate an ssh key using the command `openssl passwd -6`
 
 
-%pre
-mkdir -p /etc/ostree
-cat > /etc/ostree/auth.json << 'EOF'
-{{ file.Read (env.Getenv "DOCKER_AUTH_PATH") }}
-EOF
-%end
-
 rootpw --lock
 group --name {{ env.Getenv "USERNAME" }} --gid=1000
 user --name {{ env.Getenv "USERNAME" }}  --uid=1000 --gid=1000 --homedir=/var/home/{{ env.Getenv "USERNAME" }} --shell=/bin/bash --groups=wheel,users --password {{ env.Getenv "PASSWORD_HASH" }} --plaintext
 sshkey --username "{{ env.Getenv "USERNAME" }}" {{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}
 
-%post
-echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers.d/wheel
-chmod 440 /etc/sudoers.d/wheel
-systemctl enable sshd
-%end
 
 reboot --eject
 
