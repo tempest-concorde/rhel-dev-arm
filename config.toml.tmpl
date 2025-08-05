@@ -4,7 +4,7 @@ contents = """
 lang en_US.UTF-8
 keyboard us
 timezone UTC
-text --non-interactive
+text
 network --bootproto=dhcp --device=link --activate --onboot=on --hostname=bootc
 zerombr
 # For the command below it is critical to specify the disk otherwise it will erase ALL disks attached to the system
@@ -21,10 +21,23 @@ EOF
 %end
 
 rootpw --lock
-group --name={{ env.Getenv "USERNAME" }} --gid=1000
-user --name={{ env.Getenv "USERNAME" }} --uid=1000 --gid=1000 --homedir=/var/home/{{ env.Getenv "USERNAME" }} --shell=/bin/bash --groups=wheel,users  --password={{ env.Getenv "PASSWORD_HASH" }}
-sshkey --username {{ env.Getenv "USERNAME" }} "{{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}"
-reboot
+group --name="{{ env.Getenv "USERNAME" }}" --gid=1000
+user --name="{{ env.Getenv "USERNAME" }}" --uid=1000 --gid=1000 --homedir=/var/home/{{ env.Getenv "USERNAME" }} --shell=/bin/bash --groups=wheel,users --password="{{ env.Getenv "PASSWORD_HASH" }}" --iscrypted
+sshkey --username="{{ env.Getenv "USERNAME" }}" "{{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}"
+
+%post
+# Ensure sudo works for wheel group
+echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers.d/wheel
+chmod 440 /etc/sudoers.d/wheel
+
+# Enable SSH service
+systemctl enable sshd
+
+# Set proper permissions for user home directory
+mkdir -p /var/home/{{ env.Getenv "USERNAME" }}/.ssh
+chown -R {{ env.Getenv "USERNAME" }}:{{ env.Getenv "USERNAME" }} /var/home/{{ env.Getenv "USERNAME" }}
+chmod 700 /var/home/{{ env.Getenv "USERNAME" }}/.ssh
+%end
 
 """
 
