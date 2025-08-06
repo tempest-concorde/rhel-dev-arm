@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.2.3 (2025-08-06)
+
+### Fix
+
+* fix: password_hash
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`cf47600`](https://github.com/tempest-concorde/rhel-dev-arm/commit/cf476000b23a205101c59064d74e708ea40b16d6))
+
 ## v0.2.2 (2025-08-06)
 
 ### Chore
