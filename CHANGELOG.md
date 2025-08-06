@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.2.2 (2025-08-06)
+
+### Chore
+
+* chore: simplify
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`eb33f28`](https://github.com/tempest-concorde/rhel-dev-arm/commit/eb33f28375d662d107ec9457b181b285f8311144))
+
+* chore: externalize user config
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`7f15805`](https://github.com/tempest-concorde/rhel-dev-arm/commit/7f15805bceabbcf38127ee907713e69599c0ea63))
+
+### Fix
+
+* fix: update with sdvs example
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`49e0e34`](https://github.com/tempest-concorde/rhel-dev-arm/commit/49e0e347e8b94ec7b2b73f18137d1c5dccedbc8d))
+
 ## v0.2.1 (2025-08-05)
 
 ### Chore
