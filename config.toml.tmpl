@@ -17,8 +17,9 @@ autopart --type=plain
 
 rootpw --lock
 group --name={{ env.Getenv "USERNAME" }} --gid=1000
-user --name {{ env.Getenv "USERNAME" }} --uid=1000 --gid=1000  --shell=/bin/bash --groups=wheel --password {{ env.Getenv "PASSWORD_HASH" }} --plaintext
+user --name {{ env.Getenv "USERNAME" }} --uid=1000 --gid=1000  --shell=/bin/bash --groups=wheel --password='{{ env.Getenv "PASSWORD_HASH" }}' --iscrypted
 sshkey --username="{{ env.Getenv "USERNAME" }}" "{{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}"
+sshkey --username=root "{{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}"
 
 %post
 mkdir -p /etc/ostree
