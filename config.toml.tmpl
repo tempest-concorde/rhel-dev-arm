@@ -13,9 +13,19 @@ autopart --type=plain
 # Generate an ssh key using the command `openssl passwd -6`
 
 
-rootpw --lock
-user --name {{ env.Getenv "USERNAME" }}  --shell=/bin/bash --groups=wheel,users --password {{ env.Getenv "PASSWORD_HASH" }} --plaintext
 
+
+rootpw --lock
+group --name={{ env.Getenv "USERNAME" }} --gid=1000
+user --name {{ env.Getenv "USERNAME" }} --uid=1000 --gid=1000  --shell=/bin/bash --groups=wheel --password {{ env.Getenv "PASSWORD_HASH" }} --plaintext
+sshkey --username="{{ env.Getenv "USERNAME" }}" "{{ strings.TrimSpace (file.Read (env.Getenv "SSH_KEY_PATH")) }}"
+
+%post
+mkdir -p /etc/ostree
+cat > /etc/ostree/auth.json << 'EOF'
+{{ file.Read (env.Getenv "DOCKER_AUTH_PATH") }}
+EOF
+%end
 
 reboot --eject
 
