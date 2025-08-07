@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.2.4 (2025-08-07)
+
+### Fix
+
+* fix: add guest agents (#5)
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`4020d8f`](https://github.com/tempest-concorde/rhel-dev-arm/commit/4020d8fb77c6808bae72fa35bf1ec4de3c60e047))
+
 ## v0.2.3 (2025-08-06)
 
 ### Fix
