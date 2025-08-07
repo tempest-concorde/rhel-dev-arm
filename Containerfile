@@ -4,6 +4,7 @@ FROM registry.redhat.io/rhel10/rhel-bootc:latest
 RUN dnf groupinstall -y "Server with GUI" && dnf clean all 
 
 RUN dnf install -y \
+    qemu-guest-agent \
     podman \
     skopeo \
     git \ 
