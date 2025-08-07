@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v0.3.0 (2025-08-07)
+
+### Feature
+
+* feat: add java and tailscale (#6)
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`b130a11`](https://github.com/tempest-concorde/rhel-dev-arm/commit/b130a11321a4f2646c36e84cffaebd85e4b1c2c2))
+
 ## v0.2.4 (2025-08-07)
 
 ### Fix
