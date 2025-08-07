@@ -26,6 +26,8 @@ mkdir -p /etc/ostree
 cat > /etc/ostree/auth.json << 'EOF'
 {{ file.Read (env.Getenv "DOCKER_AUTH_PATH") }}
 EOF
+
+
 %end
 
 reboot --eject
