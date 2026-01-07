@@ -5,7 +5,16 @@
 
 version: 2
 updates:
-  - package-ecosystem: "" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    commit-message:
+      prefix: fix
+      include: scope
+  - package-ecosystem: "docker"
+    # Look for the Dockerfile or Containerfile in the root directory
+    directory: "/"
+    # Set the update interval to daily
+    schedule:
+      interval: "daily"
