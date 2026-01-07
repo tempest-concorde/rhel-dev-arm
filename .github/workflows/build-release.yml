@@ -1,5 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 name: On push of a tag
 on:
   push:
@@ -9,45 +7,59 @@ on:
 env:
   REGISTRY_USER: rh-ee-chbutler
   IMAGE_REGISTRY: quay.io
-  IMAGE: rhel-dev-arm
+  IMAGE: rhel-dev
 
 jobs:
-  buildrelease:
-    runs-on: ubuntu-24.04-arm
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     container:
       image: registry.access.redhat.com/ubi9/ubi
-      options: --privileged    
+      options: --privileged
     permissions:
       contents: write
       packages: write
       id-token: write
-
     steps:
+    - name: Prepare platform pair
+      run: |
+        platform=${{ matrix.platform }}
+        echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
     - name: Get container tools in UBI builder
-      run: dnf -y install podman buildah skopeo make wget git
+      run: dnf -y install podman buildah skopeo make wget git jq
+
     - name: Checkout repository
       uses: actions/checkout@v4
+
     - name: Access a subscription via activation key
       env:
         SMDEV_CONTAINER_OFF: 1
         orgid: ${{ secrets.RHT_ORGID }}
         activation_key: ${{ secrets.RHT_ACT_KEY }}
-
       run: subscription-manager register --org=$orgid --activationkey=$activation_key
+
     - name: Workaround open podman-login action issue
       env:
         auth: "{ \"auths\": {} }"
       run: |
         mkdir -p $HOME/.docker
         echo $auth > $HOME/.docker/config.json
-  
+
     - name: Parse version
       id: parse_version
       run: |
         VERSION=${GITHUB_REF#refs/tags/v}
         echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
 
-    
     - name: Log in to Quay.io
       uses: redhat-actions/podman-login@v1
       with:
@@ -55,11 +67,12 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
         registry: ${{ env.IMAGE_REGISTRY }}
         auth_file_path: /run/containers/0/auth.json
+
     - name: Log in to registry.redhat.io
       uses: redhat-actions/podman-login@v1
       with:
-        username: ${{ secrets.RH_REGISTRY_USER }} # service account
-        password: ${{ secrets.RH_REGISTRY_PASSWORD }} # service accounts
+        username: ${{ secrets.RH_REGISTRY_USER }}
+        password: ${{ secrets.RH_REGISTRY_PASSWORD }}
         registry: registry.redhat.io
         auth_file_path: /run/containers/0/auth.json
 
@@ -70,29 +83,120 @@ jobs:
       id: build-image
       uses: redhat-actions/buildah-build@v2
       with:
-        image: "quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}"
-        tags: latest prod ${{ steps.parse_version.outputs.VERSION }} ${{ github.sha }}
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}
+        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
         containerfiles: |
           ./Containerfile
-  
-    - name: Install Cosign
-      uses: sigstore/cosign-installer@v3.7.0
-    
-    - name: push to registry
-      uses: redhat-actions/push-to-registry@v2
+
+    - name: Push image by digest
+      id: push
+      run: |
+        buildah push --digestfile /tmp/digest \
+          ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }} \
+          docker://${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+        echo "digest=$(cat /tmp/digest)" >> $GITHUB_OUTPUT
+
+    - name: Export digest
+      run: |
+        mkdir -p /tmp/digests
+        digest="${{ steps.push.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
+
+    - name: Upload digest
+      uses: actions/upload-artifact@v4
       with:
-        image: ${{ env.IMAGE }}
-        tags: latest prod ${{ steps.parse_version.outputs.VERSION }} ${{ github.sha }} 
-        registry: quay.io/${{ env.REGISTRY_USER }}
-    
-    - name: what would we sign
-      run: podman image inspect --format '{{ .Digest }}' quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}
-      
-    - name: Sign image
-      #run: cosign sign  --yes -a tag=${{ steps.parse_version.outputs.VERSION }} -a tag=prod -a tag=latest -a tag=${{ github.sha }} -a sha=${{ github.sha }} -a run_id=${{github.run_id}} -a run_attempt="$GITHUB_RUN_ATTEMPT" quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}@`podman image inspect --format '{{ .Digest }}' quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}`
-      run: cosign sign  --yes -a tag=${{ steps.parse_version.outputs.VERSION }} -a tag=prod -a tag=latest -a tag=${{ github.sha }} -a sha=${{ github.sha }} -a run_id=${{github.run_id}} -a run_attempt="$GITHUB_RUN_ATTEMPT" quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}:prod
+        name: digests-${{ env.PLATFORM_PAIR }}
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
+
     - name: Clean up the subscription
       if: always()
       env:
         SMDEV_CONTAINER_OFF: 1
       run: subscription-manager unregister
+
+  merge:
+    name: Create multi-arch manifest and sign
+    runs-on: ubuntu-latest
+    needs: build
+    container:
+      image: registry.access.redhat.com/ubi9/ubi
+      options: --privileged
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+    steps:
+    - name: Get container tools
+      run: dnf -y install podman buildah skopeo jq
+
+    - name: Download digests
+      uses: actions/download-artifact@v4
+      with:
+        path: /tmp/digests
+        pattern: digests-*
+        merge-multiple: true
+
+    - name: Workaround open podman-login action issue
+      env:
+        auth: "{ \"auths\": {} }"
+      run: |
+        mkdir -p $HOME/.docker
+        echo $auth > $HOME/.docker/config.json
+
+    - name: Parse version
+      id: parse_version
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Log in to Quay.io
+      uses: redhat-actions/podman-login@v1
+      with:
+        username: ${{ secrets.REGISTRY_USER }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ env.IMAGE_REGISTRY }}
+        auth_file_path: /run/containers/0/auth.json
+
+    - name: Create and push manifest
+      run: |
+        IMAGE_URI="${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}"
+        VERSION="${{ steps.parse_version.outputs.VERSION }}"
+
+        # Create manifest list for each tag
+        for TAG in latest prod $VERSION ${{ github.sha }}; do
+          buildah manifest create ${IMAGE_URI}:${TAG}
+
+          # Add each architecture
+          for digest in /tmp/digests/*; do
+            digest_hash=$(basename $digest)
+            buildah manifest add ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}@sha256:${digest_hash}
+          done
+
+          # Push the manifest
+          buildah manifest push --all ${IMAGE_URI}:${TAG} docker://${IMAGE_URI}:${TAG}
+        done
+
+    - name: Inspect manifest
+      run: |
+        IMAGE_URI="${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}"
+        buildah manifest inspect ${IMAGE_URI}:prod
+
+    - name: Install Cosign
+      uses: sigstore/cosign-installer@v3.7.0
+
+    - name: Sign image recursively
+      run: |
+        IMAGE_URI="${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}"
+        VERSION="${{ steps.parse_version.outputs.VERSION }}"
+
+        cosign sign --yes --recursive \
+          -a tag=$VERSION \
+          -a tag=prod \
+          -a tag=latest \
+          -a tag=${{ github.sha }} \
+          -a sha=${{ github.sha }} \
+          -a run_id=${{ github.run_id }} \
+          -a run_attempt="$GITHUB_RUN_ATTEMPT" \
+          ${IMAGE_URI}:prod

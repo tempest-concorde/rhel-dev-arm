@@ -7,22 +7,35 @@ on:
 env:
   REGISTRY_USER: rh-ee-chbutler
   IMAGE_REGISTRY: quay.io
-  IMAGE: rhel-dev-arm
-jobs:
-  buildlatest:
-    name: Build Bootc image with repo access
+  IMAGE: rhel-dev
 
-    runs-on: ubuntu-24.04-arm
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-latest
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     container:
       image: registry.access.redhat.com/ubi9/ubi
-      options: --privileged    
+      options: --privileged
     permissions:
-      contents: write
-      packages: write
-      id-token: write
+      contents: read
+      packages: read
     steps:
+    - name: Prepare platform pair
+      run: |
+        platform=${{ matrix.platform }}
+        echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+
     - name: Get container tools in UBI builder
       run: dnf -y install podman buildah skopeo make wget git
+
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -32,28 +45,22 @@ jobs:
         orgid: ${{ secrets.RHT_ORGID }}
         activation_key: ${{ secrets.RHT_ACT_KEY }}
       run: subscription-manager register --org=$orgid --activationkey=$activation_key
+
     - name: Workaround open podman-login action issue
       env:
         auth: "{ \"auths\": {} }"
       run: |
         mkdir -p $HOME/.docker
         echo $auth > $HOME/.docker/config.json
-  
-    - name: Log in to Quay.io
-      uses: redhat-actions/podman-login@v1
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-        registry: ${{ env.IMAGE_REGISTRY }}
-        auth_file_path: /run/containers/0/auth.json
 
     - name: Log in to registry.redhat.io
       uses: redhat-actions/podman-login@v1
       with:
-        username: ${{ secrets.RH_REGISTRY_USER }} # service account
-        password: ${{ secrets.RH_REGISTRY_PASSWORD }} # service accounts
+        username: ${{ secrets.RH_REGISTRY_USER }}
+        password: ${{ secrets.RH_REGISTRY_PASSWORD }}
         registry: registry.redhat.io
         auth_file_path: /run/containers/0/auth.json
+
     - name: Pull deps
       run: make get-deps
 
@@ -61,11 +68,17 @@ jobs:
       id: build-image
       uses: redhat-actions/buildah-build@v2
       with:
-        image: "quay.io/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}"
-        tags: latest ${{ github.sha }}
+        image: ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}
+        tags: ${{ env.PLATFORM_PAIR }}-${{ github.sha }}
         containerfiles: |
-         ./Containerfile
+          ./Containerfile
+
+    - name: Validate image
+      run: |
+        buildah inspect ${{ env.IMAGE_REGISTRY }}/${{ env.REGISTRY_USER }}/${{ env.IMAGE }}:${{ env.PLATFORM_PAIR }}-${{ github.sha }}
+
     - name: Clean up the subscription
+      if: always()
       env:
         SMDEV_CONTAINER_OFF: 1
       run: subscription-manager unregister
