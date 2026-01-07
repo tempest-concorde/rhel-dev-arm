@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v0.4.0 (2026-01-07)
+
+### Feature
+
+* feat: allow multiarchitecture builds (#7)
+
+* feat: allow multiarchitecture builds
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt;
+
+* fix: do not push images in CI
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt;
+
+---------
+
+Signed-off-by: Chris Butler &lt;chris.butler@redhat.com&gt; ([`e2d2998`](https://github.com/tempest-concorde/rhel-dev-arm/commit/e2d2998661ee988c841482cc26aab61f3dee1109))
+
 ## v0.3.0 (2025-08-07)
 
 ### Feature
