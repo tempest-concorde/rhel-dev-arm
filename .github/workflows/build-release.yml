@@ -132,7 +132,7 @@ jobs:
       run: dnf -y install podman buildah skopeo jq
 
     - name: Download digests
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v7
       with:
         path: /tmp/digests
         pattern: digests-*
