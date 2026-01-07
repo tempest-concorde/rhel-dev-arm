@@ -101,6 +101,6 @@ jobs:
 
     - name: Python Semantic Release
       id: release
-      uses: python-semantic-release/python-semantic-release@v9.8.8
+      uses: python-semantic-release/python-semantic-release@v10.5.3
       with:
         github_token: ${{ secrets.FG_PAT }}
